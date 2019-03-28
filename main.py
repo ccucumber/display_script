@@ -1,4 +1,4 @@
-
+import json
 from influxdb import InfluxDBClient
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
@@ -21,15 +21,15 @@ DEVICES = ['D0','D1']
 scheduler = BackgroundScheduler()
 
 
-@app.route('/skorupa', methods=['POST'])
+@app.route('/skorupa', methods=['POST', 'GET'])
 def skorupa():
     print(request)
-    content = request.json
-    dev_id = content['dev_id']
-    dev_ip = content['IP']
-    DEVICES[dev_id] = dev_ip
-    print(DEVICES)
-    return jsonify('')
+    print(request.headers)
+    #content = request.json
+    #dev_id = content['dev_id']
+    #print(DEVICES)
+    data = {"disp" : "11.3"}
+    return json.dumps(data)
 
 
 # Influx access
