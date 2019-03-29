@@ -4,7 +4,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 import time
 import datetime
-
+import logging
+logfl = logging.getLogger('werkzeug')
+logfl.setLevel(logging.ERROR)
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 dbhost = '172.17.0.1'
 #dbhost= '192.168.90.10'
@@ -19,16 +23,16 @@ app = Flask(__name__)
 
 
 displays={
-"D1":{"machine":"K3202","number":"0","time":""},
-"D2":{"machine":"K3206","number":"0","time":""},
-"D3":{"machine":"K3208","number":"0","time":""},
-"D4":{"machine":"K3209","number":"0","time":""},
-"D5":{"machine":"K3301","number":"0","time":""},
-"D6":{"machine":"K3305","number":"0","time":""},
-"D8":{"machine":"K3307","number":"0","time":""},
-"D9":{"machine":"K3308","number":"0","time":""},
-"D10":{"machine":"K3309","number":"0","time":""},
-"D7":{"machine":"Total","number":"0","time":""}
+"D9":{"machine":"K3202","number":"0","time":""},
+"D7":{"machine":"K3206","number":"0","time":""},
+"D8":{"machine":"K3208","number":"0","time":""},
+"D4":{"machine":"K3308","number":"0","time":""},
+"D5":{"machine":"K3309","number":"0","time":""},
+"D1":{"machine":"K3305","number":"0","time":""},
+"D3":{"machine":"K3307","number":"0","time":""},
+"D10":{"machine":"K3209","number":"0","time":""},
+"D2":{"machine":"K3301","number":"0","time":""},
+"D6":{"machine":"Total","number":"0","time":""}
 }
 
 
@@ -36,14 +40,19 @@ scheduler = BackgroundScheduler()
 
 @app.route('/skorupa', methods=['POST', 'GET'])
 def skorupa():
-    print(request)
-    print(request.headers)
+    #print(request)
+    #print(request.headers)
     content = request.json
     dev_id = content['dev_id']
-    last_seen = (datetime.datetime.now() - datetime.datetime.strptime(displays[dev_id]["time"], "%Y-%m-%dT%H:%M:%SZ")).total_seconds()
-    if last_seen > 60:
-        number = ""
-    else
+    number = ""
+    try:
+        last_seen = (datetime.datetime.now() - datetime.datetime.strptime(displays[dev_id]["time"], "%Y-%m-%dT%H:%M:%SZ")).total_seconds()
+    
+        if last_seen < 60:
+            number = displays[dev_id]["number"]
+    except:
+        pass
+    if displays[dev_id]["machine"] == "Total":
         number = displays[dev_id]["number"]
     data = {"disp" : number}
     return json.dumps(data)
@@ -74,7 +83,7 @@ def tick():
         pstr +=  str(measurement) + ":" + number +"; "        
     end = time.time()
     pstr += " Time:" + "{:6.3f}".format(end - start)
-    print(pstr)
+    log.info(pstr)
 
 
 
@@ -82,5 +91,5 @@ if __name__ == '__main__':
     scheduler = BackgroundScheduler()
     scheduler.add_job(tick, 'interval', seconds=10)
     scheduler.start()
-    app.run(host='0.0.0.0', port=84, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=84, debug=False, use_reloader=False)
 
