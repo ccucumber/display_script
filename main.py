@@ -77,7 +77,7 @@ def tick():
         query = f"SELECT MEAN({channel}) from {measurement} WHERE time > now() - 1m"
         result = list(DB.query(query).get_points())[0]
         total += result["last"]
-        number = "{:3.1f}".format(0.36*result["last"])
+        number = "{:3.1f}".format(0.36*result["mean"])  #must be changed when agg fun changed in query (last/mean/etc.
         displays[display]["number"] = number
         last_seen = result["time"]
         displays[display]["time"] = last_seen
