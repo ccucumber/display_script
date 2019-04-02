@@ -73,7 +73,8 @@ def tick():
         channel = "in_1"
         measurement = displays[display]["machine"]
         #query = f"SELECT {channel} from {measurement} ORDER by time DESC LIMIT 1"
-        query = f"SELECT LAST({channel}) from {measurement}"
+        #query = f"SELECT LAST({channel}) from {measurement}"
+        query = f"SELECT MEAN({channel}) from {measurement} WHERE time > now() - 1m"
         result = list(DB.query(query).get_points())[0]
         total += result["last"]
         number = "{:3.1f}".format(0.36*result["last"])
