@@ -7,8 +7,8 @@ import datetime
 import logging
 logfl = logging.getLogger('werkzeug')
 logfl.setLevel(logging.ERROR)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
+#log = logging.getLogger()
+#log.setLevel(logging.INFO)
 
 dbhost = '172.17.0.1'
 #dbhost= '192.168.90.10'
@@ -44,16 +44,7 @@ def skorupa():
     #print(request.headers)
     content = request.json
     dev_id = content['dev_id']
-    number = ""
-    try:
-        last_seen = (datetime.datetime.now() - datetime.datetime.strptime(displays[dev_id]["time"], "%Y-%m-%dT%H:%M:%SZ")).total_seconds()
-    
-        if last_seen < 60:
-            number = displays[dev_id]["number"]
-    except:
-        pass
-    if displays[dev_id]["machine"] == "Total":
-        number = displays[dev_id]["number"]
+    number = displays[dev_id]["number"]
     data = {"disp" : number}
     return json.dumps(data)
 
@@ -74,17 +65,22 @@ def tick():
         measurement = displays[display]["machine"]
         #query = f"SELECT {channel} from {measurement} ORDER by time DESC LIMIT 1"
         #query = f"SELECT LAST({channel}) from {measurement}"
-        query = f"SELECT MEAN({channel}) from {measurement} WHERE time > now() - 1m"
-        result = list(DB.query(query).get_points())[0]
-        total += result["last"]
-        number = "{:3.1f}".format(0.36*result["mean"])  #must be changed when agg fun changed in query (last/mean/etc.
-        displays[display]["number"] = number
-        last_seen = result["time"]
-        displays[display]["time"] = last_seen
-        pstr +=  str(measurement) + ":" + number +"; "        
+        query = f"SELECT MEAN({channel}) from {measurement} WHERE time > now() - 2m"
+        result = list(DB.query(query).get_points())
+        if list(DB.query(query).get_points()):            
+            result = result[0]            
+            total += result["mean"]
+            number = "{:3.1f}".format(0.36*result["mean"])  #must be changed when agg fun changed in query (last/mean/etc.
+            displays[display]["number"] = number
+            last_seen = result["time"]
+            displays[display]["time"] = last_seen
+            pstr +=  str(measurement) + ":" + number +"; "
+        else:
+            displays[display]["number"] = ""    
+    
     end = time.time()
     pstr += " Time:" + "{:6.3f}".format(end - start)
-    log.info(pstr)
+    print(pstr, flush=True)
 
 
 
