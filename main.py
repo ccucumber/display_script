@@ -65,7 +65,8 @@ def tick():
         measurement = displays[display]["machine"]
         #query = f"SELECT {channel} from {measurement} ORDER by time DESC LIMIT 1"
         #query = f"SELECT LAST({channel}) from {measurement}"
-        query = f"SELECT MEAN({channel}) from {measurement} WHERE time > now() - 2m"
+        #remember, remember *30 * 2 m *60s/m => 360 
+        query = f"SELECT sum({channel})*30 from {measurement} WHERE time > now() - 2m"
         result = list(DB.query(query).get_points())
         if list(DB.query(query).get_points()):            
             result = result[0]            
